@@ -15,10 +15,26 @@
 
 %end
 
+%group Calculator
+%hook NSBundle
+
+- (NSString *)localizedStringForKey:(NSString *)key value:(NSString *)fallback table:(NSString *)filename {
+	return ([key isEqualToString:@"NaN"] || [key isEqualToString:@"Error"]) ?  @"¯\\_(ツ)_/¯" : %orig;
+}
+
+%end
+%end
+
 %ctor {
 	NSLog(@"TestDylib loaded");
-	if (![NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.finder"]) return;
-	if (![NSFileManager.defaultManager fileExistsAtPath:@"/tmp/finder_classdump.txt"]) {
+	%init;
+	if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.ncplugin.calculator"] ||
+		[NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.calculator"])
+	{
+		%init(Calculator);
+	}
+	else if (![NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.finder"]) return;
+	else if (![NSFileManager.defaultManager fileExistsAtPath:@"/tmp/finder_classdump.txt"]) {
 		unsigned int count=0;
 		Class *classList = objc_copyClassList(&count);
 		NSMutableString *str = [NSMutableString new];
