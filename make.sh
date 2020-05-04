@@ -1,8 +1,17 @@
 #!/usr/bin/env sh
 
+if [ "$1" == "uninstall" ]; then
+	set -e
+	echo "Killing substituted..."
+	sudo killall substituted || true
+	echo "Deleting the MacSubstitute folder..."
+	sudo rm -vrf "/usr/local/MacSubstitute"
+	exit 0
+fi
+
 if [ "${EUID}" -eq 0 ]; then
 	echo "Don't run this script as root."
-	exit 1;
+	exit 1
 fi
 
 ##### CONFIGURATION BEGIN #####
