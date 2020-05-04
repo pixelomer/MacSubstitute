@@ -35,14 +35,14 @@ TestDylib_OUT="test.dylib"
 TestDylib_FILES=""
 TestDylib_CFLAGS="-lobjc -framework Foundation -shared -framework Cocoa -I."
 TestDylib_PRE_BUILD() {
-	for a in *.x; do [ -f "$a" ] && {
-		logos.pl "$a" > .${a%.*}.m;
-		TestDylib_FILES=".${a%.*}.m ${TestDylib_FILES}";
-	}; done
-	for a in *.xm; do [ -f "$a" ] && {
-		logos.pl "$a" > .${a%.*}.mm;
-		TestDylib_FILES=".${a%.*}.mm ${TestDylib_FILES}";
-	}; done
+	m=""
+	for ((i=0;i<2;i++)); do
+		for a in *.x$m; do [ -f "$a" ] && {
+			logos.pl "$a" > .${a%.*}.m$m;
+			TestDylib_FILES=".${a%.*}.m$m ${TestDylib_FILES}";
+		}; done
+		m="m"
+	done
 }
 TestDylib_POST_BUILD() {
 	rm -f .*.m .*.mm;
