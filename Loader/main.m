@@ -2,20 +2,28 @@
 #import <dlfcn.h>
 #import <pwd.h>
 
+#define NSLog(args...) NSLog(@"[TweakLoader] "args)
+
 __attribute__((constructor))
 int substitute_constructor(int argc, char **argv) {
+	NSLog(@"TweakLoader has been loaded.");
 	struct passwd *passwd = getpwuid(getuid());
-	if (!NSBundle.mainBundle.bundleIdentifier || !passwd || !passwd->pw_dir || !strlen(passwd->pw_dir)) return 1;
+	if (!NSBundle.mainBundle.bundleIdentifier || !passwd || !passwd->pw_dir || !strlen(passwd->pw_dir)) {
+		NSLog(@"Either this application (%@) cannot be tweaked, or the passwd struct (%p) is invalid. Aborting.", NSBundle.mainBundle.bundleIdentifier, (void*)passwd);
+		return 1;
+	}
+	BOOL shouldRequestCleanup = YES;
 	NSString *tweakDir = [NSString
 		stringWithFormat:@"%s/Library/Containers/%@/Data/Documents/\x01SubstituteLink/DynamicLibraries",
 		passwd->pw_dir,
 		NSBundle.mainBundle.bundleIdentifier
 	];
-	fprintf(stderr, "Tweak directory in container: %s\n", tweakDir.UTF8String);
+	NSLog(@"Tweak directory in container: %@\n", tweakDir);
 	if (![NSFileManager.defaultManager fileExistsAtPath:tweakDir]) {
 		tweakDir = @"/usr/local/MacSubstitute/DynamicLibraries";
+		shouldRequestCleanup = NO;
 	}
-	fprintf(stderr, "Tweak directory: %s\n", tweakDir.UTF8String);
+	NSLog(@"Using tweak directory: %@\n", tweakDir);
 	NSArray<NSString *> *tweaks = [NSFileManager.defaultManager
 		contentsOfDirectoryAtPath:tweakDir
 		error:nil
@@ -103,13 +111,18 @@ int substitute_constructor(int argc, char **argv) {
 			else if (!success && mustMatchEveryFilter) break;
 		}
 		if (!success) continue;
+		NSLog(@"Loading %@...", fullDylibPath);
 		dlopen(fullDylibPath.UTF8String, RTLD_NOW);
 	} }
-	[[NSDistributedNotificationCenter defaultCenter]
-		postNotificationName:@"com.pixelomer.MacSubstitute/Cleanup"
-		object:[tweakDir stringByDeletingLastPathComponent]
-		userInfo:nil
-		deliverImmediately:NO
-	];
+	if (shouldRequestCleanup) {
+		NSLog(@"Requesting the daemon to clean the container...");
+		[[NSDistributedNotificationCenter defaultCenter]
+			postNotificationName:@"com.pixelomer.MacSubstitute/Cleanup"
+			object:[tweakDir stringByDeletingLastPathComponent]
+			userInfo:nil
+			deliverImmediately:NO
+		];
+	}
+	NSLog(@"TweakLoader has finished its job. Goodbye.");
 	return 0;
 }
