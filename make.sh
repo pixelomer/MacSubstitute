@@ -17,7 +17,7 @@ fi
 ##### CONFIGURATION BEGIN #####
 
 CC="clang"
-CFLAGS=""
+CFLAGS="-I."
 PROJECTS="InjectorBootstrap Injector Loader TestDylib"
 
 Loader_OUT="loader.dylib"
@@ -42,7 +42,7 @@ InjectorBootstrap_INSTALL() {
 
 TestDylib_OUT="test.dylib"
 TestDylib_FILES=""
-TestDylib_CFLAGS="-lobjc -framework Foundation -shared -framework Cocoa -I."
+TestDylib_CFLAGS="-Wno-deprecated-declarations -lobjc -framework Foundation -shared -framework Cocoa -I."
 TestDylib_PRE_BUILD() {
 	m=""
 	for ((i=0;i<2;i++)); do

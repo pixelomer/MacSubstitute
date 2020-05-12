@@ -1,1 +1,1 @@
-{ Filter = { Bundles = ( "com.apple.Cocoa", "com.apple.AppKit" ); }; }
+{ Filter = { Bundles = ( "com.apple.IconServices" ); }; }
