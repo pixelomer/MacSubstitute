@@ -16,6 +16,16 @@
 - (_LSBinding *)binding;
 @end
 
+%group Calculator
+%hook NSBundle
+
+- (NSString *)localizedStringForKey:(NSString *)key value:(NSString *)fallback table:(NSString *)filename {
+	return ([key isEqualToString:@"NaN"] || [key isEqualToString:@"Error"]) ?  @"¯\\_(ツ)_/¯" : %orig;
+}
+
+%end
+%end
+
 %hook ISIconManager
 
 - (id)findOrRegisterIcon:(ISIconMacOS *)icon {
@@ -28,7 +38,7 @@
 				NSDictionary *nsDict = (__bridge NSDictionary *)cfDict;
 				NSString *bundleIdentifier = nsDict[@"CFBundleIdentifier"];
 				if (bundleIdentifier) {
-					NSString *alternativeImagePath = [@"/Library/Themes/Satine.bundle" stringByAppendingPathComponent:bundleIdentifier];
+					NSString *alternativeImagePath = [@"/Users/pixelomer/Downloads/Satine.bundle" stringByAppendingPathComponent:bundleIdentifier];
 					alternativeImagePath = [alternativeImagePath stringByAppendingPathExtension:@"icns"];
 					if ([NSFileManager.defaultManager fileExistsAtPath:alternativeImagePath]) {
 						finalIcon = [[NSClassFromString(@"ISIconMacOS") alloc]
@@ -52,6 +62,10 @@
 
 %ctor {
 	%init;
+	if ([[[NSBundle mainBundle] bundleIdentifier] hasPrefix:@"com.apple."] &&
+		[[[NSBundle mainBundle] bundleIdentifier] hasSuffix:@".calculator"]) {
+		%init(Calculator);
+	}
 	/*
 	unsigned int count=0;
 	Class *classList = objc_copyClassList(&count);

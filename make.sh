@@ -16,12 +16,12 @@ fi
 
 ##### CONFIGURATION BEGIN #####
 
-CC="clang"
-CFLAGS="-I."
+CC="clang++"
+CFLAGS="-I. -fobjc-arc"
 PROJECTS="InjectorBootstrap Injector Loader TestDylib"
 
 Loader_OUT="loader.dylib"
-Loader_FILES="main.m"
+Loader_FILES="main.mm"
 Loader_CFLAGS="-lobjc -framework Foundation -shared"
 Loader_INSTALL() {
 	sudo mkdir -p "/usr/local/MacSubstitute"
@@ -30,7 +30,7 @@ Loader_INSTALL() {
 
 Injector_OUT="substituted"
 Injector_CFLAGS="-lobjc -framework Foundation -framework Cocoa"
-Injector_FILES="injector.cpp mach_inject.c main.mm"
+Injector_FILES="injector.cpp mach_inject.cpp main.mm"
 
 InjectorBootstrap_OUT="bootstrap.dylib"
 InjectorBootstrap_CFLAGS="-shared"

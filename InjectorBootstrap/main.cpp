@@ -50,11 +50,7 @@ extern "C" void bootstrap(ptrdiff_t offset, void *param, size_t psize, void *dum
 
 static void *loaderThread(void *param)
 {
-    fprintf(stderr, "Bootstrap.dylib has loaded. Now loading TweakLoader (%s).\n", (char*)param);
     void *bundle = dlopen((char *)param, RTLD_NOW);
-    if (!bundle) {
-        fprintf(stderr, "An error occurred, which prevented the bootstrap from loading the tweak loader.\n%s\n", dlerror());
-    }
     return (void*)0;
 }
 

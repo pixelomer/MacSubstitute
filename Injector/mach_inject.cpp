@@ -64,7 +64,7 @@ mach_inject(
 	unsigned long	imageSize;
 	unsigned int	jumpTableOffset;
 	unsigned int	jumpTableSize;
-	mach_error_t	err = machImageForPointer( threadEntry, &image, &imageSize, &jumpTableOffset, &jumpTableSize );
+	mach_error_t	err = machImageForPointer( (const void*)threadEntry, &image, &imageSize, &jumpTableOffset, &jumpTableSize );
 	fprintf(stderr, "mach_inject: found threadEntry image at: %p with size: %lu\n", image, imageSize);
     
 	//	Initialize stackSize to default if requested.
@@ -131,9 +131,9 @@ mach_inject(
 	//	Calculate offsets.
 	ptrdiff_t	threadEntryOffset, imageOffset;
 	if( !err ) {
-		assert( (void*)threadEntry >= image && (void*)threadEntry <= (image+imageSize) );
+		assert( (void*)threadEntry >= image && (void*)threadEntry <= (void*)((unsigned long)image+(unsigned long)imageSize) );
 		ASSERT_CAST( void*, threadEntry );
-		threadEntryOffset = ((void*) threadEntry) - image;
+		threadEntryOffset = (((char*) threadEntry) - (char *)image);
 		
 #if defined(__x86_64__)
 		imageOffset = 0; // RIP-relative addressing
@@ -297,7 +297,7 @@ machImageForPointer(
 				// needed for Universal binaries. Check if file is fat and get image size from there.
 				int fd = open (imageName, O_RDONLY);
 				size_t mapSize = *size;
-				char * fileImage = mmap (NULL, mapSize, PROT_READ, MAP_FILE|MAP_SHARED, fd, 0);
+				char * fileImage = (char *) mmap (NULL, mapSize, PROT_READ, MAP_FILE|MAP_SHARED, fd, 0);
 				
 				assert(fileImage != MAP_FAILED);
 				struct fat_header* fatHeader = (struct fat_header *)fileImage;
